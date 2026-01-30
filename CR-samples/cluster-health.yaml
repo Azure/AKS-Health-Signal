@@ -1,0 +1,13 @@
+apiVersion: health.aks.io/v1
+kind: HealthSignal
+metadata:
+  name: clusterhealth-example
+spec:
+  type: ClusterHealth
+status:
+  conditions:
+  - type: Ready
+    status: "True"
+    reason: Baseline
+    message: Cluster health baseline is healthy.
+    lastTransitionTime: "2026-01-29T10:00:00Z"

@@ -137,6 +137,7 @@ spec:
                 - ClusterHealth
                 type: string
             required:
+            - source
             - type
             type: object
           status:

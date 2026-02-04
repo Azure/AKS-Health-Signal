@@ -23,12 +23,13 @@ type HealthSignalSpec struct {
 	// +kubebuilder:validation:Required
 	Type HealthSignalType `json:"type"`
 
-	// Source is the controller/component that produced this health signal
-	Source *corev1.ObjectReference `json:"source,omitempty"`
-
 	// Target of the health signal. Required when type=NodeHealth
 	// +optional
 	Target *corev1.ObjectReference `json:"target,omitempty"`
+
+	// Source is the controller/component that produced this health signal
+	// +kubebuilder:validation:Required
+	Source corev1.ObjectReference `json:"source"`
 }
 
 // HealthSignalStatus defines the observed state of HealthSignal

@@ -1,12 +1,9 @@
-apiVersion: health.aks.io/v1
+apiVersion: upgrade.aks.io/v1alpha1
 kind: HealthSignal
 metadata:
   name: aks-userpool-31207608-vmss000000-example
 spec:
-  type: NodeHealth
-  target:
-    kind: Node
-    name: aks-userpool-31207608-vmss000000
+  source: ClusterHealthMonitor
 status:
   conditions:
   - type: Ready

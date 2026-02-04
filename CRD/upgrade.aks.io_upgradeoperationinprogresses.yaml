@@ -4,23 +4,24 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  name: upgradenodeinprogresses.upgrade.aks.io
+  name: upgradeoperationinprogresses.upgrade.aks.io
 spec:
   group: upgrade.aks.io
   names:
-    kind: UpgradeNodeInProgress
-    listKind: UpgradeNodeInProgressList
-    plural: upgradenodeinprogresses
+    kind: UpgradeOperationInProgress
+    listKind: UpgradeOperationInProgressList
+    plural: upgradeoperationinprogresses
     shortNames:
-    - unip
-    singular: upgradenodeinprogress
+    - uoip
+    singular: upgradeoperationinprogress
   scope: Cluster
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: UpgradeNodeInProgress is the Schema for the upgradenodeinprogresses
-          API
+        description: |-
+          UpgradeOperationInProgress is the Schema for the upgradeoperationinprogresses API
+          The existence of this CR indicates an upgrade operation is in progress.
         properties:
           apiVersion:
             description: |-
@@ -39,17 +40,6 @@ spec:
             type: string
           metadata:
             type: object
-          nodeRef:
-            description: NodeReference contains a reference to a Node
-            properties:
-              name:
-                description: Name is the name of the Node
-                type: string
-            required:
-            - name
-            type: object
-        required:
-        - nodeRef
         type: object
     served: true
     storage: true

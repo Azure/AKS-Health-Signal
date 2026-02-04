@@ -1,7 +1,7 @@
-// Package v1 contains API Schema definitions for the health.aks.io v1 API group
+// Package v1alpha1 contains API Schema definitions for the health.aks.io v1alpha1 API group
 // +kubebuilder:object:generate=true
 // +groupName=health.aks.io
-package v1
+package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
@@ -26,6 +26,10 @@ type HealthSignalSpec struct {
 	// Target of the health signal. Required when type=NodeHealth
 	// +optional
 	Target *corev1.ObjectReference `json:"target,omitempty"`
+
+	// Source is the controller/component that produced this health signal
+	// +optional
+	Source *corev1.ObjectReference `json:"source,omitempty"`
 }
 
 // HealthSignalStatus defines the observed state of HealthSignal
@@ -44,7 +48,6 @@ type HealthSignalStatus struct {
 // +kubebuilder:resource:scope=Cluster,shortName=hs
 // +kubebuilder:validation:XValidation:rule="self.spec.type != 'NodeHealth' || has(self.spec.target) && has(self.spec.target.name) && self.spec.target.name != ''",message="spec.target.name is required when spec.type is NodeHealth."
 // +kubebuilder:validation:XValidation:rule="self.spec.type != 'ClusterHealth' || !has(self.spec.target) || !has(self.spec.target.name)",message="spec.target must not be set when spec.type is ClusterHealth."
-
 
 // HealthSignal is the Schema for the healthsignals API
 type HealthSignal struct {

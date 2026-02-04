@@ -1,4 +1,4 @@
-apiVersion: upgrade.aks.io/v1
+apiVersion: upgrade.aks.io/v1alpha1
 kind: UpgradeNodeInProgress
 metadata:
   name: aks-userpool-31207608-vmss000000
@@ -7,14 +7,10 @@ metadata:
     kubernetes.azure.com/upgradeOperationId: 6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a
     kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
     kubernetes.azure.com/targetImageVersion: "AKSUbuntu-2204gen2containerd-202601.07.0"
-spec:
-  nodeRef:
-    kind: Node
-    name: aks-userpool-31207608-vmss000000
-status:
-  conditions:
-  - type: InProgress
-    status: "True"
-    reason: NodeImageUpgrade
-    message: Upgrading node image to AKSUbuntu-2204gen2containerd-202601.07.0
-    lastTransitionTime: "2026-01-23T14:14:00Z"
+    kubernetes.azure.com/upgradeStartedAt: "2026-01-23T14:02:00Z"
+  ownerReferences:
+  - apiVersion: upgrade.aks.io/v1alpha1
+    kind: UpgradeOperationInProgress
+    name: cluster-upgrade
+nodeRef:
+  name: aks-userpool-31207608-vmss000000

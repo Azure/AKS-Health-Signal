@@ -1,9 +1,9 @@
-apiVersion: health.aks.io/v1
+apiVersion: upgrade.aks.io/v1alpha1
 kind: HealthSignal
 metadata:
   name: clusterhealth-example
 spec:
-  type: ClusterHealth
+  source: ClusterHealthMonitor
 status:
   conditions:
   - type: Ready

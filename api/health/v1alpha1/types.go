@@ -31,7 +31,7 @@ type HealthSignalSpec struct {
 	// +kubebuilder:validation:Required
 	Source corev1.ObjectReference `json:"source"`
 
-	// TimeoutSeconds is the maximum duration in seconds that RP should wait for
+	// TimeoutSeconds is the maximum duration in seconds that AKS should wait for
 	// the health signal to reach a verdict. Defaults to 300 (5 minutes) if not set.
 	// +optional
 	// +kubebuilder:validation:Minimum=1

@@ -19,7 +19,7 @@ metadata:
     name: aks-userpool-31207608-vmss000000
 spec:
   type: NodeHealth          # NodeHealth or ClusterHealth
-  timeoutSeconds: 300       # Max seconds RP waits for verdict (default: 300)
+  timeoutSeconds: 300       # Max seconds AKS waits for verdict (default: 300)
   target:                   # Required for NodeHealth (corev1.ObjectReference)
     kind: Node
     name: aks-userpool-31207608-vmss000000

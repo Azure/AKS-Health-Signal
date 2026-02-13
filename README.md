@@ -19,10 +19,11 @@ metadata:
     name: aks-userpool-31207608-vmss000000
 spec:
   type: NodeHealth          # NodeHealth or ClusterHealth
+  timeoutSeconds: 300       # Max seconds RP waits for verdict (default: 300)
   target:                   # Required for NodeHealth (corev1.ObjectReference)
     kind: Node
     name: aks-userpool-31207608-vmss000000
-  source:                   # Optional: component that produced this signal
+  source:                   # Required: component that produced this signal
     kind: DaemonSet
     name: node-health-monitor
     namespace: kube-system
@@ -43,9 +44,9 @@ Signals that a cluster upgrade operation is in progress. The existence of this C
 apiVersion: upgrade.aks.io/v1alpha1
 kind: UpgradeOperationInProgress
 metadata:
-  name: cluster-upgrade
+  name: upgrade-6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a
   annotations:
-    kubernetes.azure.com/upgradeOperationId: 6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a
+    kubernetes.azure.com/upgradeCorrelationID: 6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a
     kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
 ```
 
@@ -64,6 +65,7 @@ metadata:
     name: cluster-upgrade
   annotations:
     kubernetes.azure.com/agentpool: userpool
+    kubernetes.azure.com/upgradeCorrelationID: 6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a
 nodeRef:
   name: aks-userpool-31207608-vmss000000
 ```
@@ -71,7 +73,7 @@ nodeRef:
 ## Ownership Hierarchy
 
 ```
-UpgradeOperationInProgress (cluster-upgrade)
+UpgradeOperationInProgress (upgrade-<correlationID>)
 ├── UpgradeNodeInProgress (per node)
 │   └── HealthSignal/NodeHealth (per node)
 └── HealthSignal/ClusterHealth

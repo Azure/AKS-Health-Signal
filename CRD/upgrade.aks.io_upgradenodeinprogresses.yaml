@@ -39,17 +39,23 @@ spec:
             type: string
           metadata:
             type: object
-          nodeRef:
-            description: NodeReference contains a reference to a Node
+          spec:
+            description: UpgradeNodeInProgressSpec defines the desired state of UpgradeNodeInProgress
             properties:
-              name:
-                description: Name is the name of the Node
-                type: string
+              nodeRef:
+                description: NodeReference contains a reference to a Node
+                properties:
+                  name:
+                    description: Name is the name of the Node
+                    type: string
+                required:
+                - name
+                type: object
             required:
-            - name
+            - nodeRef
             type: object
         required:
-        - nodeRef
+        - spec
         type: object
     served: true
     storage: true

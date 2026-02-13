@@ -8,6 +8,7 @@ metadata:
     name: aks-userpool-31207608-vmss000000
 spec:
   type: NodeHealth
+  timeoutSeconds: 300
   target:
     kind: Node
     name: aks-userpool-31207608-vmss000000

@@ -1,8 +1,8 @@
 apiVersion: upgrade.aks.io/v1alpha1
 kind: UpgradeOperationInProgress
 metadata:
-  name: cluster-upgrade
+  name: upgrade-6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a
   annotations:
-    kubernetes.azure.com/upgradeOperationId: 6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a
+    kubernetes.azure.com/upgradeCorrelationID: 6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a
     kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
     kubernetes.azure.com/upgradeStartedAt: "2026-01-23T14:00:00Z"

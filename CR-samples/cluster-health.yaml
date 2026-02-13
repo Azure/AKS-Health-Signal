@@ -8,6 +8,7 @@ metadata:
     name: cluster-upgrade
 spec:
   type: ClusterHealth
+  timeoutSeconds: 300
   source:
     kind: DaemonSet
     name: cluster-health-monitor

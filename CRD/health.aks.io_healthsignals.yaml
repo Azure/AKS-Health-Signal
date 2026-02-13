@@ -130,6 +130,14 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
+              timeoutSeconds:
+                default: 300
+                description: |-
+                  TimeoutSeconds is the maximum duration in seconds that RP should wait for
+                  the health signal to reach a verdict. Defaults to 300 (5 minutes) if not set.
+                format: int32
+                minimum: 1
+                type: integer
               type:
                 description: Type is the health signal type
                 enum:

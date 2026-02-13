@@ -30,6 +30,13 @@ type HealthSignalSpec struct {
 	// Source is the controller/component that produced this health signal
 	// +kubebuilder:validation:Required
 	Source corev1.ObjectReference `json:"source"`
+
+	// TimeoutSeconds is the maximum duration in seconds that RP should wait for
+	// the health signal to reach a verdict. Defaults to 300 (5 minutes) if not set.
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:default=300
+	TimeoutSeconds *int32 `json:"timeoutSeconds,omitempty"`
 }
 
 // HealthSignalStatus defines the observed state of HealthSignal

@@ -14,6 +14,12 @@ type NodeReference struct {
 	Name string `json:"name"`
 }
 
+// UpgradeNodeInProgressSpec defines the desired state of UpgradeNodeInProgress
+type UpgradeNodeInProgressSpec struct {
+	// +kubebuilder:validation:Required
+	NodeRef NodeReference `json:"nodeRef"`
+}
+
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster,shortName=unip
 
@@ -23,7 +29,7 @@ type UpgradeNodeInProgress struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// +kubebuilder:validation:Required
-	NodeRef NodeReference `json:"nodeRef"`
+	Spec UpgradeNodeInProgressSpec `json:"spec"`
 }
 
 // +kubebuilder:object:root=true

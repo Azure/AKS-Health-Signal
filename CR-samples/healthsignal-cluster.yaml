@@ -1,0 +1,17 @@
+# HealthSignal – cluster-level health reported by a monitoring app.
+apiVersion: health.aks.io/v1alpha1
+kind: HealthSignal
+metadata:
+  name: clusterhealth-example
+  ownerReferences:
+  - apiVersion: health.aks.io/v1alpha1
+    kind: HealthCheckRequest
+    name: upgrade-6e8ef28e
+spec:
+  type: ClusterHealth
+  conditions:
+  - type: Ready
+    status: "True"
+    reason: Baseline
+    message: Cluster health baseline is healthy.
+    lastTransitionTime: "2026-02-26T22:15:32Z"

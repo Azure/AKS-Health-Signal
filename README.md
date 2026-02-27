@@ -1,85 +1,99 @@
 # AKS Health Signal
 
-Kubernetes Custom Resource Definitions (CRDs) for AKS health signaling and upgrade tracking.
+Kubernetes Custom Resource Definitions (CRDs) for AKS health signaling during upgrade operations.
 
-## CRDs
+## Custom Resources
+
+### HealthCheckRequest
+
+Created by the AKS Resource Provider (RP) to request health monitoring for a
+node, node pool, or cluster during an upgrade. **Cluster-scoped** (no namespace).
+One HealthCheckRequest is created per node.
+
+```yaml
+apiVersion: health.aks.io/v1alpha1
+kind: HealthCheckRequest
+metadata:
+  name: aks-userpool-31207608-vmss000000-6e8ef28e
+  annotations:
+    kubernetes.azure.com/upgradeCorrelationID: "6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a"
+    kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
+spec:
+  scope: Node                  # Node | NodePool | Cluster
+  targetName: aks-userpool-31207608-vmss000000
+```
 
 ### HealthSignal
 
-Represents the health state of a cluster or node.
+Created and updated **entirely by monitoring apps** in response to a
+HealthCheckRequest. The RP only reads HealthSignal resources. **Namespaced**
+**Cluster-scoped** (no namespace).
 
 ```yaml
 apiVersion: health.aks.io/v1alpha1
 kind: HealthSignal
 metadata:
-  name: aks-userpool-31207608-vmss000000
+  name: nodehealth-aks-userpool-31207608-vmss000000
   ownerReferences:
-  - apiVersion: upgrade.aks.io/v1alpha1
-    kind: UpgradeNodeInProgress
-    name: aks-userpool-31207608-vmss000000
+  - apiVersion: health.aks.io/v1alpha1
+    kind: HealthCheckRequest
+    name: aks-userpool-31207608-vmss000000-6e8ef28e
 spec:
-  type: NodeHealth          # NodeHealth or ClusterHealth
-  timeoutSeconds: 300       # Max seconds AKS waits for verdict (default: 300)
-  target:                   # Required for NodeHealth (corev1.ObjectReference)
+  type: NodeHealth             # NodeHealth | ClusterHealth
+  targetRef:
+    apiVersion: v1
     kind: Node
     name: aks-userpool-31207608-vmss000000
-  source:                   # Required: component that produced this signal
-    kind: DaemonSet
-    name: node-health-monitor
-    namespace: kube-system
-status:
   conditions:
   - type: Ready
-    status: "True"          # True (Healthy), False (Unhealthy), Unknown
+    status: "True"             # True=Healthy, False=Unhealthy, Unknown=No verdict
     reason: Baseline
-    message: Node health is healthy.
-    lastTransitionTime: "2026-01-29T10:00:00Z"
+    message: Node health is healthy over last 5 minutes.
+    lastTransitionTime: "2026-02-26T22:15:32Z"
 ```
 
-### UpgradeOperationInProgress
-
-Signals that a cluster upgrade operation is in progress. The existence of this CR indicates an upgrade is active.
+If **unhealthy** — RP aborts the upgrade:
 
 ```yaml
-apiVersion: upgrade.aks.io/v1alpha1
-kind: UpgradeOperationInProgress
-metadata:
-  name: upgrade-6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a
-  annotations:
-    kubernetes.azure.com/upgradeCorrelationID: 6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a
-    kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
+  conditions:
+  - type: Ready
+    status: "False"
+    reason: NotReady
+    message: Node was NotReady for >2 minutes.
+    lastTransitionTime: "2026-02-26T22:16:10Z"
 ```
 
-### UpgradeNodeInProgress
+## Condition Semantics
 
-Signals that a specific node is currently undergoing upgrade.
+| `status` | Meaning | RP Behaviour |
+|----------|---------|--------------|
+| `"True"` | Healthy | Continue upgrade |
+| `"False"` | Unhealthy | **Abort** upgrade |
+| `"Unknown"` | No verdict yet | Wait (until timeout) |
 
-```yaml
-apiVersion: upgrade.aks.io/v1alpha1
-kind: UpgradeNodeInProgress
-metadata:
-  name: aks-userpool-31207608-vmss000000
-  ownerReferences:
-  - apiVersion: upgrade.aks.io/v1alpha1
-    kind: UpgradeOperationInProgress
-    name: cluster-upgrade
-  annotations:
-    kubernetes.azure.com/agentpool: userpool
-    kubernetes.azure.com/upgradeCorrelationID: 6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a
-nodeRef:
-  name: aks-userpool-31207608-vmss000000
+If the timeout elapses with no `"False"` condition, the RP proceeds.
+
+## Well-Known Annotations
+
+| Key | Format | Set By | Purpose |
+|-----|--------|--------|---------|
+| `kubernetes.azure.com/upgradeCorrelationID` | UUID string | RP | Links CRs to a specific upgrade operation |
+| `kubernetes.azure.com/targetKubernetesVersion` | Semver (e.g. `"1.33.5"`) | RP | Target Kubernetes version for the upgrade |
+| `health.aks.io/request-name` | String (HealthCheckRequest name) | Monitoring app (optional) | Optional explicit linkage to a HealthCheckRequest |
+
+## OwnerReferences & Garbage Collection
+
+Every HealthSignal **must** set an `ownerReference` to its corresponding
+HealthCheckRequest. This ensures:
+
+- **Automatic garbage collection** — deleting the HealthCheckRequest cascades to
+  all owned HealthSignal resources.
+- **Clear linkage** — the relationship between request and signal is explicit.
+
 ```
-
-## Ownership Hierarchy
-
+HealthCheckRequest (per node, cluster-scoped)
+└── HealthSignal (namespaced, in kube-system)
 ```
-UpgradeOperationInProgress (upgrade-<correlationID>)
-├── UpgradeNodeInProgress (per node)
-│   └── HealthSignal/NodeHealth (per node)
-└── HealthSignal/ClusterHealth
-```
-
-Deleting `UpgradeOperationInProgress` cascades to all child resources.
 
 ## Development
 
@@ -89,12 +103,24 @@ Deleting `UpgradeOperationInProgress` cascades to all child resources.
 make manifests
 ```
 
+### Generate DeepCopy methods
+
+```bash
+make generate
+```
+
+### Run both
+
+```bash
+make
+```
+
 ### Project Structure
 
 ```
 api/
-  health/v1alpha1/     # HealthSignal Go types
-  upgrade/v1alpha1/    # UpgradeNodeInProgress, UpgradeOperationInProgress Go types
+  health/v1alpha1/     # HealthSignal & HealthCheckRequest Go types
 CRD/                   # Generated CRD YAML files
 CR-samples/            # Example CR instances
+monitoring/            # Monitoring deployment manifests (Datadog, keepalive)
 ```

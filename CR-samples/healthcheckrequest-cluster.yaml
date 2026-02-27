@@ -1,0 +1,10 @@
+# HealthCheckRequest – cluster-level health check requested by the AKS RP.
+apiVersion: health.aks.io/v1alpha1
+kind: HealthCheckRequest
+metadata:
+  name: upgrade-6e8ef28e
+  annotations:
+    kubernetes.azure.com/upgradeCorrelationID: "6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a"
+    kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
+spec:
+  scope: Cluster

@@ -4,23 +4,29 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  name: upgradenodeinprogresses.upgrade.aks.io
+  name: healthcheckrequests.health.aks.io
 spec:
-  group: upgrade.aks.io
+  group: health.aks.io
   names:
-    kind: UpgradeNodeInProgress
-    listKind: UpgradeNodeInProgressList
-    plural: upgradenodeinprogresses
+    kind: HealthCheckRequest
+    listKind: HealthCheckRequestList
+    plural: healthcheckrequests
     shortNames:
-    - unip
-    singular: upgradenodeinprogress
+    - hcr
+    singular: healthcheckrequest
   scope: Cluster
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: UpgradeNodeInProgress is the Schema for the upgradenodeinprogresses
-          API
+        description: |-
+          HealthCheckRequest is the Schema for the healthcheckrequests API.
+
+
+          Created to request health monitoring for a specific target
+          (node, node pool, or cluster). Monitoring apps watch for these
+          and create corresponding HealthSignal resources with ownerReferences
+          pointing back to the request.
         properties:
           apiVersion:
             description: |-
@@ -40,19 +46,28 @@ spec:
           metadata:
             type: object
           spec:
-            description: UpgradeNodeInProgressSpec defines the desired state of UpgradeNodeInProgress
+            description: HealthCheckRequestSpec defines the desired state of a HealthCheckRequest.
             properties:
-              nodeRef:
-                description: NodeReference contains a reference to a Node
+              scope:
+                description: 'Scope indicates the level of this health check: Node,
+                  NodePool, or Cluster.'
+                enum:
+                - Node
+                - NodePool
+                - Cluster
+                type: string
+              targetRef:
+                description: TargetRef references the target object (e.g., a Node
+                  or ).
                 properties:
                   name:
-                    description: Name is the name of the Node
+                    description: Name of the referenced object.
                     type: string
                 required:
                 - name
                 type: object
             required:
-            - nodeRef
+            - scope
             type: object
         required:
         - spec

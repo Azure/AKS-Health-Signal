@@ -21,4 +21,5 @@ var (
 
 func init() {
 	SchemeBuilder.Register(&HealthSignal{}, &HealthSignalList{})
+	SchemeBuilder.Register(&HealthCheckRequest{}, &HealthCheckRequestList{})
 }

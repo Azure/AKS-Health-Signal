@@ -1,0 +1,22 @@
+# HealthSignal – node health reported by a monitoring app (unhealthy).
+# When the RP sees status: "False", it aborts the upgrade.
+apiVersion: health.aks.io/v1alpha1
+kind: HealthSignal
+metadata:
+  name: nodehealth-aks-userpool-31207608-vmss000000
+  ownerReferences:
+  - apiVersion: health.aks.io/v1alpha1
+    kind: HealthCheckRequest
+    name: aks-userpool-31207608-vmss000000-6e8ef28e
+spec:
+  type: NodeHealth
+  targetRef:
+    apiVersion: v1
+    kind: Node
+    name: aks-userpool-31207608-vmss000000
+  conditions:
+  - type: Ready
+    status: "False"         # False = Unhealthy → RP aborts upgrade
+    reason: NotReady
+    message: Node was NotReady for >2 minutes.
+    lastTransitionTime: "2026-02-26T22:16:10Z"

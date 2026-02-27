@@ -1,0 +1,26 @@
+# HealthSignal – node health reported by a monitoring app (healthy).
+# ownerReferences links this signal to the HealthCheckRequest so that
+# deleting the request automatically garbage-collects the signal.
+apiVersion: health.aks.io/v1alpha1
+kind: HealthSignal
+metadata:
+  name: nodehealth-aks-userpool-31207608-vmss000000
+  ownerReferences:
+  - apiVersion: health.aks.io/v1alpha1
+    kind: HealthCheckRequest
+    name: aks-userpool-31207608-vmss000000-6e8ef28e
+  annotations:
+    # Optional explicit linkage to the HealthCheckRequest
+    health.aks.io/request-name: aks-userpool-31207608-vmss000000-6e8ef28e
+spec:
+  type: NodeHealth
+  targetRef:
+    apiVersion: v1
+    kind: Node
+    name: aks-userpool-31207608-vmss000000
+  conditions:
+  - type: Ready
+    status: "True"          # True = Healthy
+    reason: Baseline
+    message: Node health is healthy over last 5 minutes.
+    lastTransitionTime: "2026-02-26T22:15:32Z"

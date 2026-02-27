@@ -19,7 +19,17 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: HealthSignal is the Schema for the healthsignals API
+        description: |-
+          HealthSignal is the Schema for the healthsignals API.
+
+
+          Created and updated by monitoring apps in response to a HealthCheckRequest.
+
+
+          Ownership: each HealthSignal MUST set an ownerReference pointing to its
+          corresponding HealthCheckRequest. This ensures:
+            - Automatic garbage collection when the request is deleted.
+            - Clear linkage between request and signal.
         properties:
           apiVersion:
             description: |-
@@ -39,121 +49,26 @@ spec:
           metadata:
             type: object
           spec:
-            description: HealthSignalSpec defines the desired state of HealthSignal
-            properties:
-              source:
-                description: Source is the controller/component that produced this
-                  health signal
-                properties:
-                  apiVersion:
-                    description: API version of the referent.
-                    type: string
-                  fieldPath:
-                    description: |-
-                      If referring to a piece of an object instead of an entire object, this string
-                      should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].
-                      For example, if the object reference is to a container within a pod, this would take on a value like:
-                      "spec.containers{name}" (where "name" refers to the name of the container that triggered
-                      the event) or if no container name is specified "spec.containers[2]" (container with
-                      index 2 in this pod). This syntax is chosen only to have some well-defined way of
-                      referencing a part of an object.
-                      TODO: this design is not final and this field is subject to change in the future.
-                    type: string
-                  kind:
-                    description: |-
-                      Kind of the referent.
-                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-                    type: string
-                  name:
-                    description: |-
-                      Name of the referent.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                    type: string
-                  namespace:
-                    description: |-
-                      Namespace of the referent.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
-                    type: string
-                  resourceVersion:
-                    description: |-
-                      Specific resourceVersion to which this reference is made, if any.
-                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
-                    type: string
-                  uid:
-                    description: |-
-                      UID of the referent.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
-                    type: string
-                type: object
-                x-kubernetes-map-type: atomic
-              target:
-                description: Target of the health signal. Required when type=NodeHealth
-                properties:
-                  apiVersion:
-                    description: API version of the referent.
-                    type: string
-                  fieldPath:
-                    description: |-
-                      If referring to a piece of an object instead of an entire object, this string
-                      should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].
-                      For example, if the object reference is to a container within a pod, this would take on a value like:
-                      "spec.containers{name}" (where "name" refers to the name of the container that triggered
-                      the event) or if no container name is specified "spec.containers[2]" (container with
-                      index 2 in this pod). This syntax is chosen only to have some well-defined way of
-                      referencing a part of an object.
-                      TODO: this design is not final and this field is subject to change in the future.
-                    type: string
-                  kind:
-                    description: |-
-                      Kind of the referent.
-                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-                    type: string
-                  name:
-                    description: |-
-                      Name of the referent.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                    type: string
-                  namespace:
-                    description: |-
-                      Namespace of the referent.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
-                    type: string
-                  resourceVersion:
-                    description: |-
-                      Specific resourceVersion to which this reference is made, if any.
-                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
-                    type: string
-                  uid:
-                    description: |-
-                      UID of the referent.
-                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
-                    type: string
-                type: object
-                x-kubernetes-map-type: atomic
-              timeoutSeconds:
-                default: 300
-                description: |-
-                  TimeoutSeconds is the maximum duration in seconds that AKS should wait for
-                  the health signal to reach a verdict. Defaults to 300 (5 minutes) if not set.
-                format: int32
-                minimum: 1
-                type: integer
-              type:
-                description: Type is the health signal type
-                enum:
-                - NodeHealth
-                - ClusterHealth
-                type: string
-            required:
-            - source
-            - type
-            type: object
-          status:
-            description: HealthSignalStatus defines the observed state of HealthSignal
+            description: |-
+              HealthSignalSpec defines the desired state of a HealthSignal.
+
+
+              HealthSignal is written entirely by monitoring apps. The AKS RP reads it.
+              Decision logic:
+                - If any condition status becomes "False", the RP aborts the upgrade.
+                - If the timeout elapses with no "False" condition, the RP proceeds.
             properties:
               conditions:
-                description: Conditions represent the latest available observations
-                  of the HealthSignal's state.
+                description: |-
+                  Conditions represent health verdicts using standard Kubernetes metav1.Condition.
+
+
+                  Each condition has:
+                    type              – condition type (e.g., "Ready")
+                    status            – "True" (Healthy), "False" (Unhealthy), "Unknown" (No verdict)
+                    reason            – machine-readable CamelCase reason (e.g., "Baseline", "NotReady")
+                    message           – human-readable description
+                    lastTransitionTime – when the condition last changed
                 items:
                   description: "Condition contains details for one aspect of the current
                     state of this API Resource.\n---\nThis struct is intended for
@@ -225,17 +140,64 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              targetRef:
+                description: |-
+                  TargetRef identifies the Kubernetes object this health signal targets.
+                  Uses the standard corev1.ObjectReference type.
+                  Required when type is NodeHealth.
+                properties:
+                  apiVersion:
+                    description: API version of the referent.
+                    type: string
+                  fieldPath:
+                    description: |-
+                      If referring to a piece of an object instead of an entire object, this string
+                      should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].
+                      For example, if the object reference is to a container within a pod, this would take on a value like:
+                      "spec.containers{name}" (where "name" refers to the name of the container that triggered
+                      the event) or if no container name is specified "spec.containers[2]" (container with
+                      index 2 in this pod). This syntax is chosen only to have some well-defined way of
+                      referencing a part of an object.
+                      TODO: this design is not final and this field is subject to change in the future.
+                    type: string
+                  kind:
+                    description: |-
+                      Kind of the referent.
+                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+                    type: string
+                  name:
+                    description: |-
+                      Name of the referent.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    type: string
+                  namespace:
+                    description: |-
+                      Namespace of the referent.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+                    type: string
+                  resourceVersion:
+                    description: |-
+                      Specific resourceVersion to which this reference is made, if any.
+                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
+                    type: string
+                  uid:
+                    description: |-
+                      UID of the referent.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
+              type:
+                description: Type is the health signal type (e.g., NodeHealth).
+                enum:
+                - NodeHealth
+                - ClusterHealth
+                type: string
+            required:
+            - type
             type: object
         required:
         - spec
         type: object
-        x-kubernetes-validations:
-        - message: spec.target.name is required when spec.type is NodeHealth.
-          rule: self.spec.type != 'NodeHealth' || has(self.spec.target) && has(self.spec.target.name)
-            && self.spec.target.name != ''
-        - message: spec.target must not be set when spec.type is ClusterHealth.
-          rule: self.spec.type != 'ClusterHealth' || !has(self.spec.target) || !has(self.spec.target.name)
     served: true
     storage: true
-    subresources:
-      status: {}

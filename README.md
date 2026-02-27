@@ -6,44 +6,41 @@ Kubernetes Custom Resource Definitions (CRDs) for AKS health signaling during up
 
 ### HealthCheckRequest
 
-Created by the AKS Resource Provider (RP) to request health monitoring for a
-node, node pool, or cluster during an upgrade. **Cluster-scoped** (no namespace).
-One HealthCheckRequest is created per node.
-
+Created by the AKS Resource Provider (AKS) to request health monitoring for a
+node, node pool, or cluster during an upgrade. 
 ```yaml
 apiVersion: health.aks.io/v1alpha1
 kind: HealthCheckRequest
 metadata:
-  name: aks-userpool-31207608-vmss000000-6e8ef28e
+  name: aks-useAKSool-31207608-vmss000000-6e8ef28e
   annotations:
     kubernetes.azure.com/upgradeCorrelationID: "6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a"
     kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
 spec:
   scope: Node                  # Node | NodePool | Cluster
-  targetName: aks-userpool-31207608-vmss000000
+  targetName: aks-useAKSool-31207608-vmss000000
 ```
 
 ### HealthSignal
 
 Created and updated **entirely by monitoring apps** in response to a
-HealthCheckRequest. The RP only reads HealthSignal resources. **Namespaced**
-**Cluster-scoped** (no namespace).
+HealthCheckRequest. 
 
 ```yaml
 apiVersion: health.aks.io/v1alpha1
 kind: HealthSignal
 metadata:
-  name: nodehealth-aks-userpool-31207608-vmss000000
+  name: nodehealth-aks-useAKSool-31207608-vmss000000
   ownerReferences:
   - apiVersion: health.aks.io/v1alpha1
     kind: HealthCheckRequest
-    name: aks-userpool-31207608-vmss000000-6e8ef28e
+    name: aks-useAKSool-31207608-vmss000000-6e8ef28e
 spec:
   type: NodeHealth             # NodeHealth | ClusterHealth
   targetRef:
     apiVersion: v1
     kind: Node
-    name: aks-userpool-31207608-vmss000000
+    name: aks-useAKSool-31207608-vmss000000
   conditions:
   - type: Ready
     status: "True"             # True=Healthy, False=Unhealthy, Unknown=No verdict
@@ -52,7 +49,7 @@ spec:
     lastTransitionTime: "2026-02-26T22:15:32Z"
 ```
 
-If **unhealthy** — RP aborts the upgrade:
+If **unhealthy** AKS will cancel the upgrade:
 
 ```yaml
   conditions:
@@ -63,22 +60,22 @@ If **unhealthy** — RP aborts the upgrade:
     lastTransitionTime: "2026-02-26T22:16:10Z"
 ```
 
-## Condition Semantics
+## Condition Semantics On Upgrade
 
-| `status` | Meaning | RP Behaviour |
+| `status` | Meaning | AKS Behaviour |
 |----------|---------|--------------|
 | `"True"` | Healthy | Continue upgrade |
 | `"False"` | Unhealthy | **Abort** upgrade |
 | `"Unknown"` | No verdict yet | Wait (until timeout) |
 
-If the timeout elapses with no `"False"` condition, the RP proceeds.
+If the timeout elapses with no `"Unkown"` condition, AKS proceeds.
 
 ## Well-Known Annotations
 
-| Key | Format | Set By | Purpose |
+| Key | Format | Set By | PuAKSose |
 |-----|--------|--------|---------|
-| `kubernetes.azure.com/upgradeCorrelationID` | UUID string | RP | Links CRs to a specific upgrade operation |
-| `kubernetes.azure.com/targetKubernetesVersion` | Semver (e.g. `"1.33.5"`) | RP | Target Kubernetes version for the upgrade |
+| `kubernetes.azure.com/upgradeCorrelationID` | UUID string | AKS | Links CRs to a specific upgrade operation |
+| `kubernetes.azure.com/targetKubernetesVersion` | Semver (e.g. `"1.33.5"`) | AKS | Target Kubernetes version for the upgrade |
 | `health.aks.io/request-name` | String (HealthCheckRequest name) | Monitoring app (optional) | Optional explicit linkage to a HealthCheckRequest |
 
 ## OwnerReferences & Garbage Collection
@@ -91,8 +88,8 @@ HealthCheckRequest. This ensures:
 - **Clear linkage** — the relationship between request and signal is explicit.
 
 ```
-HealthCheckRequest (per node, cluster-scoped)
-└── HealthSignal (namespaced, in kube-system)
+HealthCheckRequest
+└── HealthSignal 
 ```
 
 ## Development

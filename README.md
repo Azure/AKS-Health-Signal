@@ -12,13 +12,13 @@ node, node pool, or cluster during an upgrade.
 apiVersion: health.aks.io/v1alpha1
 kind: HealthCheckRequest
 metadata:
-  name: aks-useAKSool-31207608-vmss000000-6e8ef28e
+  name: aks-userpool-31207608-vmss000000-6e8ef28e
   annotations:
     kubernetes.azure.com/upgradeCorrelationID: "6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a"
     kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
 spec:
   scope: Node                  # Node | NodePool | Cluster
-  targetName: aks-useAKSool-31207608-vmss000000
+  targetName: aks-userpool-31207608-vmss000000
 ```
 
 ### HealthSignal
@@ -30,11 +30,11 @@ HealthCheckRequest.
 apiVersion: health.aks.io/v1alpha1
 kind: HealthSignal
 metadata:
-  name: nodehealth-aks-useAKSool-31207608-vmss000000
+  name: nodehealth-aks-userpool-31207608-vmss000000
   ownerReferences:
   - apiVersion: health.aks.io/v1alpha1
     kind: HealthCheckRequest
-    name: aks-useAKSool-31207608-vmss000000-6e8ef28e
+    name: aks-userpool-31207608-vmss000000-6e8ef28e
 spec:
   type: NodeHealth             # NodeHealth | ClusterHealth
   targetRef:

@@ -60,7 +60,10 @@ type HealthSignalSpec struct {
 	// Required when type is NodeHealth.
 	// +optional
 	TargetRef *corev1.ObjectReference `json:"targetRef,omitempty"`
+}
 
+// HealthSignalStatus defines the observed state of a HealthSignal.
+type HealthSignalStatus struct {
 	// Conditions represent health verdicts using standard Kubernetes metav1.Condition.
 	//
 	// Each condition has:
@@ -79,6 +82,7 @@ type HealthSignalSpec struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,shortName=hs
 
 // HealthSignal is the Schema for the healthsignals API.
@@ -94,7 +98,8 @@ type HealthSignal struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// +kubebuilder:validation:Required
-	Spec HealthSignalSpec `json:"spec"`
+	Spec   HealthSignalSpec   `json:"spec"`
+	Status HealthSignalStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

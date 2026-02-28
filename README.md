@@ -40,7 +40,8 @@ spec:
   targetRef:
     apiVersion: v1
     kind: Node
-    name: aks-useAKSool-31207608-vmss000000
+    name: aks-userpool-31207608-vmss000000
+status:
   conditions:
   - type: Ready
     status: "True"             # True=Healthy, False=Unhealthy, Unknown=No verdict
@@ -52,6 +53,7 @@ spec:
 If **unhealthy** AKS will cancel the upgrade:
 
 ```yaml
+status:
   conditions:
   - type: Ready
     status: "False"

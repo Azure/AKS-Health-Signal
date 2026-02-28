@@ -9,6 +9,7 @@ metadata:
     name: upgrade-6e8ef28e
 spec:
   type: ClusterHealth
+status:
   conditions:
   - type: Ready
     status: "True"

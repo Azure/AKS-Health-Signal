@@ -18,6 +18,7 @@ spec:
     apiVersion: v1
     kind: Node
     name: aks-userpool-31207608-vmss000000
+status:
   conditions:
   - type: Ready
     status: "True"          # True = Healthy

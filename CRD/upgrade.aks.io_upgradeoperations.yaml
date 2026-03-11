@@ -1,0 +1,71 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: upgradeoperations.upgrade.aks.io
+spec:
+  group: upgrade.aks.io
+  names:
+    kind: UpgradeOperation
+    listKind: UpgradeOperationList
+    plural: upgradeoperations
+    shortNames:
+    - uo
+    singular: upgradeoperation
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: |-
+          UpgradeOperation is the Schema for the upgradeoperations API.
+
+
+          Created by the AKS Resource Provider to represent an in-progress upgrade of
+          a cluster or node pool. Multiple node-pool UpgradeOperations may exist
+          concurrently, but each target may have at most one active UpgradeOperation.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: UpgradeOperationSpec defines the desired state of an UpgradeOperation.
+            properties:
+              targetName:
+                description: |-
+                  TargetName is the name of the upgrade target.
+                  For Cluster upgrades this is the cluster name; for NodePool upgrades
+                  this is the node pool name.
+                minLength: 1
+                type: string
+              type:
+                description: 'Type indicates the upgrade type: Cluster or NodePool.'
+                enum:
+                - Cluster
+                - NodePool
+                type: string
+            required:
+            - targetName
+            - type
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true

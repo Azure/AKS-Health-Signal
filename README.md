@@ -1,8 +1,43 @@
 # AKS Health Signal
 
-Kubernetes Custom Resource Definitions (CRDs) for AKS health signaling during upgrade operations.
+Kubernetes Custom Resource Definitions (CRDs) for AKS health signaling and upgrade operations.
 
 ## Custom Resources
+
+### UpgradeOperation
+
+Created by the AKS Resource Provider (AKS) to represent an in-progress upgrade
+of a cluster or node pool. Multiple node-pool UpgradeOperations may coexist on
+the same cluster, but each target (cluster or node pool) may have at most one
+active UpgradeOperation at a time.
+
+```yaml
+apiVersion: upgrade.aks.io/v1alpha1
+kind: UpgradeOperation
+metadata:
+  name: cluster-upgrade
+  annotations:
+    kubernetes.azure.com/upgradeOperationId: "6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a"
+    kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
+spec:
+  type: Cluster                # Cluster | NodePool
+  targetName: my-aks-cluster
+```
+
+Node pool upgrade example:
+
+```yaml
+apiVersion: upgrade.aks.io/v1alpha1
+kind: UpgradeOperation
+metadata:
+  name: agentpool-upgrade-userpool
+  annotations:
+    kubernetes.azure.com/upgradeOperationId: "a1b2c3d4-1234-5678-9abc-def012345678"
+    kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
+spec:
+  type: NodePool
+  targetName: userpool
+```
 
 ### HealthCheckRequest
 
@@ -74,8 +109,9 @@ If the timeout elapses with no `"Unkown"` condition, AKS proceeds.
 
 ## Well-Known Annotations
 
-| Key | Format | Set By | PuAKSose |
-|-----|--------|--------|---------|
+| Key | Format | Set By | Purpose |
+|-----|--------|--------|--------|
+| `kubernetes.azure.com/upgradeOperationId` | UUID string | AKS | Uniquely identifies an UpgradeOperation |
 | `kubernetes.azure.com/upgradeCorrelationID` | UUID string | AKS | Links CRs to a specific upgrade operation |
 | `kubernetes.azure.com/targetKubernetesVersion` | Semver (e.g. `"1.33.5"`) | AKS | Target Kubernetes version for the upgrade |
 | `health.aks.io/request-name` | String (HealthCheckRequest name) | Monitoring app (optional) | Optional explicit linkage to a HealthCheckRequest |
@@ -119,6 +155,7 @@ make
 ```
 api/
   health/v1alpha1/     # HealthSignal & HealthCheckRequest Go types
+  upgrade/v1alpha1/    # UpgradeOperation Go types
 CRD/                   # Generated CRD YAML files
 CR-samples/            # Example CR instances
 monitoring/            # Monitoring deployment manifests (Datadog, keepalive)

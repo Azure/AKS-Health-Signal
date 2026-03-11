@@ -1,0 +1,10 @@
+apiVersion: upgrade.aks.io/v1alpha1
+kind: UpgradeOperation
+metadata:
+  name: agentpool-upgrade-userpool
+  annotations:
+    kubernetes.azure.com/upgradeOperationId: "a1b2c3d4-1234-5678-9abc-def012345678"
+    kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
+spec:
+  type: NodePool
+  targetName: userpool

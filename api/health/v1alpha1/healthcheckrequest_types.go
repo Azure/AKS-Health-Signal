@@ -7,7 +7,7 @@
 //
 //   - HealthSignal: Created and updated by monitoring apps (e.g., DaemonSets) in
 //     response to a HealthCheckRequest. Contains health conditions that the RP reads
-//     to decide whether to proceed or abort an upgrade. Namespaced (kube-system).
+//     to decide whether to proceed or abort an upgrade. Cluster-scoped.
 //
 // Linkage: Each HealthSignal sets an ownerReference to its HealthCheckRequest,
 // ensuring automatic garbage collection when the request is deleted.

@@ -49,7 +49,8 @@ const (
 // HealthSignal is written entirely by monitoring apps. The AKS RP reads it.
 // Decision logic:
 //   - If any condition status becomes "False", the RP aborts the upgrade.
-//   - If the timeout elapses with no "False" condition, the RP proceeds.
+//   - If the timeout elapses with no "True" condition, the RP considers the
+//     health verdict as not healthy.
 type HealthSignalSpec struct {
 	// Type is the health signal type (e.g., NodeHealth).
 	// +kubebuilder:validation:Required
@@ -62,7 +63,8 @@ type HealthSignalSpec struct {
 	TargetRef *corev1.ObjectReference `json:"targetRef,omitempty"`
 
 	// Timeout is the maximum duration the RP waits for a health verdict.
-	// If the timeout elapses with no "False" condition, the RP proceeds.
+	// If the timeout elapses with no "True" condition, the RP considers the
+	// health verdict as not healthy.
 	// Expressed as a Kubernetes duration (e.g., "5m", "1h30m").
 	// +optional
 	Timeout *metav1.Duration `json:"timeout,omitempty"`

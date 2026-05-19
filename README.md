@@ -105,7 +105,7 @@ status:
 | `"False"` | Unhealthy | **Abort** upgrade |
 | `"Unknown"` | No verdict yet | Wait (until timeout) |
 
-If the timeout elapses with no `"Unkown"` condition, AKS proceeds.
+If the timeout elapses with no `"True"` condition, AKS considers the health verdict as not healthy.
 
 ## Well-Known Annotations
 

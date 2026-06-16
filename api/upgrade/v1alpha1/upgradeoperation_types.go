@@ -3,11 +3,11 @@
 // This package defines one custom resource:
 //
 //   - UpgradeOperation: Created by the AKS Resource Provider (RP) to represent
-//     an in-progress upgrade of a cluster or agent pool. Cluster-scoped.
+//     one or more in-progress upgrade targets on a cluster. Cluster-scoped.
 //
 // Constraints:
-//   - Multiple node-pool UpgradeOperations may coexist on the same cluster,
-//     but each target (cluster or node pool) may have at most one active
+//   - Cluster and node-pool targets may coexist in the same UpgradeOperation.
+//   - Each target (cluster or node pool) may have at most one active
 //     UpgradeOperation at a time.
 //
 // +kubebuilder:object:generate=true
@@ -31,17 +31,20 @@ const (
 )
 
 // UpgradeOperationSpec defines the desired state of an UpgradeOperation.
+// +kubebuilder:validation:XValidation:rule="self.type != 'Cluster' || size(self.targetNames) == 1",message="cluster upgrades must target exactly one cluster name"
+// +kubebuilder:validation:XValidation:rule="self.targetNames.all(target, size(target) > 0)",message="targetNames entries must be non-empty"
 type UpgradeOperationSpec struct {
 	// Type indicates the upgrade type: Cluster or NodePool.
 	// +kubebuilder:validation:Required
 	Type UpgradeType `json:"type"`
 
-	// TargetName is the name of the upgrade target.
-	// For Cluster upgrades this is the cluster name; for NodePool upgrades
-	// this is the node pool name.
+	// TargetNames are the names of the upgrade targets.
+	// For Cluster upgrades this list contains the cluster name; for NodePool
+	// upgrades this list contains one or more node pool names.
 	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:MinLength=1
-	TargetName string `json:"targetName"`
+	// +kubebuilder:validation:MinItems=1
+	// +listType=set
+	TargetNames []string `json:"targetNames"`
 }
 
 // +kubebuilder:object:root=true
@@ -49,15 +52,20 @@ type UpgradeOperationSpec struct {
 
 // UpgradeOperation is the Schema for the upgradeoperations API.
 //
-// Created by the AKS Resource Provider to represent an in-progress upgrade of
-// a cluster or node pool. Multiple node-pool UpgradeOperations may exist
-// concurrently, but each target may have at most one active UpgradeOperation.
+// Created by the AKS Resource Provider to represent one or more in-progress
+// upgrade targets on a cluster. Cluster and node-pool targets may coexist in
+// the same UpgradeOperation, but each target may have at most one active
+// UpgradeOperation at a time.
 type UpgradeOperation struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
+	// Spec is the list of upgrade targets carried by this operation.
 	// +kubebuilder:validation:Required
-	Spec UpgradeOperationSpec `json:"spec"`
+	// +kubebuilder:validation:MinItems=1
+	// +kubebuilder:validation:XValidation:rule="self.filter(item, item.type == 'Cluster').size() <= 1",message="at most one cluster entry is allowed"
+	// +listType=atomic
+	Spec []UpgradeOperationSpec `json:"spec"`
 }
 
 // +kubebuilder:object:root=true

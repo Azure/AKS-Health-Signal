@@ -6,5 +6,6 @@ metadata:
     kubernetes.azure.com/upgradeOperationId: "6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a"
     kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
 spec:
-  type: Cluster
-  targetName: my-aks-cluster
+  - type: Cluster
+    targetNames:
+    - my-aks-cluster

@@ -6,10 +6,10 @@ Kubernetes Custom Resource Definitions (CRDs) for AKS health signaling and upgra
 
 ### UpgradeOperation
 
-Created by the AKS Resource Provider (AKS) to represent an in-progress upgrade
-of a cluster or node pool. Multiple node-pool UpgradeOperations may coexist on
-the same cluster, but each target (cluster or node pool) may have at most one
-active UpgradeOperation at a time.
+Created by the AKS Resource Provider (AKS) to represent one or more in-progress
+upgrade targets on a cluster. Cluster and node-pool targets may coexist in the
+same UpgradeOperation, but each target (cluster or node pool) may have at most
+one active UpgradeOperation at a time.
 
 ```yaml
 apiVersion: upgrade.aks.io/v1alpha1
@@ -20,11 +20,16 @@ metadata:
     kubernetes.azure.com/upgradeOperationId: "6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a"
     kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
 spec:
-  type: Cluster                # Cluster | NodePool
-  targetName: my-aks-cluster
+  - type: Cluster              # Cluster | NodePool
+    targetNames:
+    - my-aks-cluster
+  - type: NodePool
+    targetNames:
+    - systempool
+    - userpool
 ```
 
-Node pool upgrade example:
+Node pool only example:
 
 ```yaml
 apiVersion: upgrade.aks.io/v1alpha1
@@ -35,8 +40,10 @@ metadata:
     kubernetes.azure.com/upgradeOperationId: "a1b2c3d4-1234-5678-9abc-def012345678"
     kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
 spec:
-  type: NodePool
-  targetName: userpool
+  - type: NodePool
+    targetNames:
+    - systempool
+    - userpool
 ```
 
 ### HealthCheckRequest

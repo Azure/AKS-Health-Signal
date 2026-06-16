@@ -23,9 +23,10 @@ spec:
           UpgradeOperation is the Schema for the upgradeoperations API.
 
 
-          Created by the AKS Resource Provider to represent an in-progress upgrade of
-          a cluster or node pool. Multiple node-pool UpgradeOperations may exist
-          concurrently, but each target may have at most one active UpgradeOperation.
+          Created by the AKS Resource Provider to represent one or more in-progress
+          upgrade targets on a cluster. Cluster and node-pool targets may coexist in
+          the same UpgradeOperation, but each target may have at most one active
+          UpgradeOperation at a time.
         properties:
           apiVersion:
             description: |-
@@ -45,25 +46,41 @@ spec:
           metadata:
             type: object
           spec:
-            description: UpgradeOperationSpec defines the desired state of an UpgradeOperation.
-            properties:
-              targetName:
-                description: |-
-                  TargetName is the name of the upgrade target.
-                  For Cluster upgrades this is the cluster name; for NodePool upgrades
-                  this is the node pool name.
-                minLength: 1
-                type: string
-              type:
-                description: 'Type indicates the upgrade type: Cluster or NodePool.'
-                enum:
-                - Cluster
-                - NodePool
-                type: string
-            required:
-            - targetName
-            - type
-            type: object
+            description: Spec is the list of upgrade targets carried by this operation.
+            items:
+              description: UpgradeOperationSpec defines the desired state of an UpgradeOperation.
+              properties:
+                targetNames:
+                  description: |-
+                    TargetNames are the names of the upgrade targets.
+                    For Cluster upgrades this list contains the cluster name; for NodePool
+                    upgrades this list contains one or more node pool names.
+                  items:
+                    type: string
+                  minItems: 1
+                  type: array
+                  x-kubernetes-list-type: set
+                type:
+                  description: 'Type indicates the upgrade type: Cluster or NodePool.'
+                  enum:
+                  - Cluster
+                  - NodePool
+                  type: string
+              required:
+              - targetNames
+              - type
+              type: object
+              x-kubernetes-validations:
+              - message: cluster upgrades must target exactly one cluster name
+                rule: self.type != 'Cluster' || size(self.targetNames) == 1
+              - message: targetNames entries must be non-empty
+                rule: self.targetNames.all(target, size(target) > 0)
+            minItems: 1
+            type: array
+            x-kubernetes-list-type: atomic
+            x-kubernetes-validations:
+            - message: at most one cluster entry is allowed
+              rule: self.filter(item, item.type == 'Cluster').size() <= 1
         required:
         - spec
         type: object

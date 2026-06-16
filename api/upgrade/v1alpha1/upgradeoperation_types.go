@@ -64,7 +64,8 @@ type UpgradeOperation struct {
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:XValidation:rule="self.filter(item, item.type == 'Cluster').size() <= 1",message="at most one cluster entry is allowed"
-	// +listType=atomic
+	// +listType=map
+	// +listMapKey=type
 	Spec []UpgradeOperationSpec `json:"spec"`
 }
 

@@ -77,7 +77,9 @@ spec:
                 rule: self.targetNames.all(target, size(target) > 0)
             minItems: 1
             type: array
-            x-kubernetes-list-type: atomic
+            x-kubernetes-list-map-keys:
+            - type
+            x-kubernetes-list-type: map
             x-kubernetes-validations:
             - message: at most one cluster entry is allowed
               rule: self.filter(item, item.type == 'Cluster').size() <= 1

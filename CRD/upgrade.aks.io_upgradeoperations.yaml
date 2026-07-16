@@ -57,6 +57,7 @@ spec:
                     upgrades this list contains one or more node pool names.
                   items:
                     type: string
+                  maxItems: 100
                   minItems: 1
                   type: array
                   x-kubernetes-list-type: set
@@ -75,6 +76,7 @@ spec:
                 rule: self.type != 'Cluster' || size(self.targetNames) == 1
               - message: targetNames entries must be non-empty
                 rule: self.targetNames.all(target, size(target) > 0)
+            maxItems: 2
             minItems: 1
             type: array
             x-kubernetes-list-map-keys:

@@ -43,6 +43,8 @@ type UpgradeOperationSpec struct {
 	// upgrades this list contains one or more node pool names.
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinItems=1
+	// +kubebuilder:validation:MaxItems=100
+	// +kubebuilder:validation:items:MaxLength=253
 	// +listType=set
 	TargetNames []string `json:"targetNames"`
 }
@@ -63,6 +65,7 @@ type UpgradeOperation struct {
 	// Spec is the list of upgrade targets carried by this operation.
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinItems=1
+	// +kubebuilder:validation:MaxItems=2
 	// +kubebuilder:validation:XValidation:rule="self.filter(item, item.type == 'Cluster').size() <= 1",message="at most one cluster entry is allowed"
 	// +listType=map
 	// +listMapKey=type

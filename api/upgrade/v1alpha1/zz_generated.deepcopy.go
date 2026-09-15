@@ -5,7 +5,6 @@
 package v1alpha1
 
 import (
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -95,12 +94,12 @@ func (in *UpgradeGateRule) DeepCopyInto(out *UpgradeGateRule) {
 	out.Target = in.Target
 	if in.NodeTimeout != nil {
 		in, out := &in.NodeTimeout, &out.NodeTimeout
-		*out = new(v1.Duration)
+		*out = new(Duration)
 		**out = **in
 	}
 	if in.NodeMinReadyPeriod != nil {
 		in, out := &in.NodeMinReadyPeriod, &out.NodeMinReadyPeriod
-		*out = new(v1.Duration)
+		*out = new(Duration)
 		**out = **in
 	}
 }

@@ -1,15 +1,15 @@
-# HealthCheckRequest - node-level health check requested by the AKS RP.
-# One request is created per node during an upgrade operation.
+# HealthCheckRequest - node-pool-level health check requested by the AKS RP.
+# Created when a node pool is upgraded; one request covers the whole pool.
 apiVersion: health.aks.io/v1alpha1
 kind: HealthCheckRequest
 metadata:
-  name: aks-userpool-31207608-vmss000000-6e8ef28e
+  name: userpool-6e8ef28e
   annotations:
     # UUID linking this request to the upgrade operation (set by RP)
     kubernetes.azure.com/upgradeCorrelationID: "6e8ef28e-bb8a-42cb-aa0b-d05a05b1ba0a"
     # Target Kubernetes version for the upgrade (set by RP)
     kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
 spec:
-  scope: Node
+  scope: NodePool
   targetRef:
-    name: aks-userpool-31207608-vmss000000
+    name: userpool

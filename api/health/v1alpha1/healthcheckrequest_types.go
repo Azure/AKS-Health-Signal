@@ -45,12 +45,15 @@ type TargetRef struct {
 // HealthCheckRequestSpec defines the desired state of a HealthCheckRequest.
 type HealthCheckRequestSpec struct {
 	// Scope indicates the level of this health check: Node, NodePool, or Cluster.
+	// A Node-scoped request is created per node being replaced; a NodePool- or
+	// Cluster-scoped request is created for the pool or cluster being upgraded.
 	// +kubebuilder:validation:Required
 	Scope HealthCheckRequestScope `json:"scope"`
 
-	// TargetRef references the target object (e.g., a Node or ).
+	// TargetRef names the target of this health check: the node, node pool, or
+	// cluster, according to Scope.
 	// +kubebuilder:validation:Required
-	TargetRef *TargetRef `json:"targetRef,omitempty"`
+	TargetRef TargetRef `json:"targetRef"`
 }
 
 // +kubebuilder:object:root=true

@@ -1,0 +1,20 @@
+apiVersion: upgrade.aks.io/v1alpha1
+kind: UpgradeGatePolicy
+metadata:
+  name: node-monitor
+spec:
+  # Must match the health.aks.io/provider label this app sets on its HealthSignals.
+  provider: node-monitor.example.com
+  rules:
+    # Gate userpool, waiting up to 5 minutes after each node for a verdict.
+    - target:
+        scope: NodePool
+        name: userpool
+      nodeTimeout: 5m
+      onFailure: Abort
+    # The same provider may gate another pool on different terms.
+    - target:
+        scope: NodePool
+        name: agentpool
+      nodeTimeout: 2m
+      onFailure: Abort

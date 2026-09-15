@@ -1,15 +1,21 @@
-# HealthSignal – cluster-level health reported by a monitoring app.
+# HealthSignal - cluster-level health reported by a monitoring app.
+# The ownerReferences uid is a placeholder; replace it with the real one or
+# this object is garbage collected on create:
+#   kubectl get healthcheckrequest upgrade-6e8ef28e -o jsonpath='{.metadata.uid}'
 apiVersion: health.aks.io/v1alpha1
 kind: HealthSignal
 metadata:
   name: clusterhealth-example
+  labels:
+    # Must match UpgradeGatePolicy.spec.provider.
+    health.aks.io/provider: cluster-monitor.example.com
   ownerReferences:
   - apiVersion: health.aks.io/v1alpha1
     kind: HealthCheckRequest
     name: upgrade-6e8ef28e
+    uid: 7a8b9c0d-1e2f-3041-5263-748596a7b8c9
 spec:
   type: ClusterHealth
-  timeout: 15m
 status:
   conditions:
   - type: Ready

@@ -1,8 +1,6 @@
 package v1alpha1
 
 import (
-	"time"
-
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -19,14 +17,13 @@ const (
 	// ResourceHealthSignals is the plural resource name for HealthSignal.
 	ResourceHealthSignals = "healthsignals"
 
-	// LabelUpgradeOperation is a label set on HealthCheckRequest and HealthSignal CRs
-	// to identify the parent UpgradeOperation. This enables efficient label-selector filtering
-	// on watches and lists.
-	LabelUpgradeOperation = "upgrade.aks.io/operation"
-
-	// DefaultHealthSignalTimeout is the maximum duration the RP waits for a health verdict
-	// per node. If the timeout elapses with no "False" condition, the RP proceeds.
-	DefaultHealthSignalTimeout = 5 * time.Minute
+	// LabelHealthSignalProvider identifies the monitoring app that produced a
+	// HealthSignal. Required on every HealthSignal.
+	//
+	// The value is matched against UpgradeGatePolicy.spec.provider
+	// (upgrade.aks.io/v1alpha1). A signal that is unlabelled, or labelled with a
+	// provider the RP is not waiting for, does not satisfy any gate.
+	LabelHealthSignalProvider = "health.aks.io/provider"
 )
 
 var (

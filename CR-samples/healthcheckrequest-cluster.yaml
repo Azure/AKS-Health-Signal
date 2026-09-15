@@ -1,4 +1,4 @@
-# HealthCheckRequest – cluster-level health check requested by the AKS RP.
+# HealthCheckRequest - cluster-level health check requested by the AKS RP.
 apiVersion: health.aks.io/v1alpha1
 kind: HealthCheckRequest
 metadata:
@@ -8,3 +8,5 @@ metadata:
     kubernetes.azure.com/targetKubernetesVersion: "1.33.5"
 spec:
   scope: Cluster
+  targetRef:
+    name: my-aks-cluster

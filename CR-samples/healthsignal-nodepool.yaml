@@ -1,29 +1,27 @@
-# HealthSignal - node health reported by a monitoring app (healthy).
+# HealthSignal - node-pool-wide health, answering a HealthCheckRequest with
+# scope: NodePool.
 # The ownerReferences uid is a placeholder; replace it with the real one or
 # this object is garbage collected on create:
-#   kubectl get healthcheckrequest aks-userpool-31207608-vmss000000-6e8ef28e -o jsonpath='{.metadata.uid}'
+#   kubectl get healthcheckrequest userpool-6e8ef28e -o jsonpath='{.metadata.uid}'
 apiVersion: health.aks.io/v1alpha1
 kind: HealthSignal
 metadata:
-  name: nodehealth-aks-userpool-31207608-vmss000000
+  name: userpool-6e8ef28e-nodemonitor
   labels:
     # Must match UpgradeGatePolicy.spec.provider.
     health.aks.io/provider: node-monitor.example.com
   ownerReferences:
   - apiVersion: health.aks.io/v1alpha1
     kind: HealthCheckRequest
-    name: aks-userpool-31207608-vmss000000-6e8ef28e
-    uid: 0f1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9
+    name: userpool-6e8ef28e
+    uid: 3c4d5e6f-7a8b-9c0d-1e2f-30415263748a
 spec:
-  type: NodeHealth
-  targetRef:
-    apiVersion: v1
-    kind: Node
-    name: aks-userpool-31207608-vmss000000
+  type: NodePoolHealth
+  # No targetRef: the pool is identified by the owning HealthCheckRequest.
 status:
   conditions:
   - type: Ready
     status: "True"          # True = Healthy
     reason: Baseline
-    message: Node health is healthy over last 5 minutes.
+    message: All workloads in userpool are healthy.
     lastTransitionTime: "2026-02-26T22:15:32Z"

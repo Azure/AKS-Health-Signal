@@ -8,8 +8,14 @@ const (
 	// KindUpgradeOperation is the Kind string for UpgradeOperation resources.
 	KindUpgradeOperation = "UpgradeOperation"
 
+	// KindUpgradeGatePolicy is the Kind string for UpgradeGatePolicy resources.
+	KindUpgradeGatePolicy = "UpgradeGatePolicy"
+
 	// ResourceUpgradeOperations is the plural resource name for UpgradeOperation.
 	ResourceUpgradeOperations = "upgradeoperations"
+
+	// ResourceUpgradeGatePolicies is the plural resource name for UpgradeGatePolicy.
+	ResourceUpgradeGatePolicies = "upgradegatepolicies"
 )
 
 var (
@@ -18,5 +24,12 @@ var (
 		Group:    GroupVersion.Group,
 		Version:  GroupVersion.Version,
 		Resource: ResourceUpgradeOperations,
+	}
+
+	// UpgradeGatePolicyGVR is the GroupVersionResource for UpgradeGatePolicy.
+	UpgradeGatePolicyGVR = schema.GroupVersionResource{
+		Group:    GroupVersion.Group,
+		Version:  GroupVersion.Version,
+		Resource: ResourceUpgradeGatePolicies,
 	}
 )

@@ -65,9 +65,16 @@ type UpgradeGatePolicySpec struct {
 	// It MUST match the "health.aks.io/provider" label that the app sets on
 	// every HealthSignal it creates; that label is how the RP maps a signal
 	// back to this policy.
+	//
+	// Because it is compared against a label value, it is constrained to the
+	// Kubernetes label value rules: at most 63 characters, alphanumeric at
+	// each end, and only '-', '_' or '.' in between. In particular a '/' is
+	// not permitted. Use reverse-DNS to avoid collisions between vendors,
+	// for example "node-monitor.example.com".
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinLength=1
-	// +kubebuilder:validation:MaxLength=253
+	// +kubebuilder:validation:MaxLength=63
+	// +kubebuilder:validation:Pattern=`^[A-Za-z0-9]([-A-Za-z0-9_.]*[A-Za-z0-9])?$`
 	Provider string `json:"provider"`
 
 	// Rules are the targets this provider gates.

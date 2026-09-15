@@ -1,8 +1,6 @@
 package v1alpha1
 
 import (
-	"time"
-
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -19,14 +17,21 @@ const (
 	// ResourceHealthSignals is the plural resource name for HealthSignal.
 	ResourceHealthSignals = "healthsignals"
 
-	// LabelUpgradeOperation is a label set on HealthCheckRequest and HealthSignal CRs
-	// to identify the parent UpgradeOperation. This enables efficient label-selector filtering
-	// on watches and lists.
-	LabelUpgradeOperation = "upgrade.aks.io/operation"
-
-	// DefaultHealthSignalTimeout is the maximum duration the RP waits for a health verdict
-	// per node. If the timeout elapses with no "False" condition, the RP proceeds.
-	DefaultHealthSignalTimeout = 5 * time.Minute
+	// LabelHealthSignalProvider identifies which monitoring app produced a
+	// HealthSignal. Every app MUST set it on every HealthSignal it creates.
+	//
+	// The AKS Resource Provider uses it to decide whether a signal comes from a
+	// provider it is waiting for: the value is matched against
+	// UpgradeGatePolicy.spec.provider (upgrade.aks.io/v1alpha1). A signal whose
+	// provider the RP is not waiting for is ignored, and a provider the RP is
+	// waiting for that never produces a matching signal fails at its configured
+	// timeout. An unlabelled HealthSignal therefore cannot satisfy any gate.
+	//
+	// This is a label rather than an annotation so the value is constrained by
+	// the API server to the label value rules (see the matching validation on
+	// UpgradeGatePolicy.spec.provider), and so signals can be selected by
+	// provider, e.g. kubectl get healthsignals -l health.aks.io/provider=<name>.
+	LabelHealthSignalProvider = "health.aks.io/provider"
 )
 
 var (

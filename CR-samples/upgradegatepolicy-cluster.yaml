@@ -1,0 +1,16 @@
+apiVersion: upgrade.aks.io/v1alpha1
+kind: UpgradeGatePolicy
+metadata:
+  name: cluster-monitor
+spec:
+  provider: cluster-monitor.example.com
+  rules:
+    # Cluster scope gates every node in the cluster; name is omitted.
+    - target:
+        scope: Cluster
+      nodeTimeout: 1m
+      # Hold the window open 30s after the node reports healthy, so this
+      # cluster-scoped monitor has time to notice damage the node cannot see in
+      # itself.
+      nodeMinReadyPeriod: 30s
+      onFailure: Abort

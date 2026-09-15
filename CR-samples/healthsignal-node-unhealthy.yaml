@@ -1,16 +1,21 @@
-# HealthSignal – node health reported by a monitoring app (unhealthy).
-# When the RP sees status: "False", it aborts the upgrade.
+# HealthSignal - node health reported by a monitoring app (unhealthy).
+# The ownerReferences uid is a placeholder; replace it with the real one or
+# this object is garbage collected on create:
+#   kubectl get healthcheckrequest aks-userpool-31207608-vmss000000-6e8ef28e -o jsonpath='{.metadata.uid}'
 apiVersion: health.aks.io/v1alpha1
 kind: HealthSignal
 metadata:
   name: nodehealth-aks-userpool-31207608-vmss000000
+  labels:
+    # Must match UpgradeGatePolicy.spec.provider.
+    health.aks.io/provider: node-monitor.example.com
   ownerReferences:
   - apiVersion: health.aks.io/v1alpha1
     kind: HealthCheckRequest
     name: aks-userpool-31207608-vmss000000-6e8ef28e
+    uid: 0f1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9
 spec:
   type: NodeHealth
-  timeout: 10m
   targetRef:
     apiVersion: v1
     kind: Node

@@ -49,16 +49,19 @@ spec:
             description: HealthCheckRequestSpec defines the desired state of a HealthCheckRequest.
             properties:
               scope:
-                description: 'Scope indicates the level of this health check: Node,
-                  NodePool, or Cluster.'
+                description: |-
+                  Scope indicates the level of this health check: Node, NodePool, or Cluster.
+                  A Node-scoped request is created per node being replaced; a NodePool- or
+                  Cluster-scoped request is created for the pool or cluster being upgraded.
                 enum:
                 - Node
                 - NodePool
                 - Cluster
                 type: string
               targetRef:
-                description: TargetRef references the target object (e.g., a Node
-                  or ).
+                description: |-
+                  TargetRef names the target of this health check: the node, node pool, or
+                  cluster, according to Scope.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -68,6 +71,7 @@ spec:
                 type: object
             required:
             - scope
+            - targetRef
             type: object
         required:
         - spec

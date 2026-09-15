@@ -21,15 +21,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// HealthSignalType defines the type of health signal.
-// +kubebuilder:validation:Enum=NodeHealth;ClusterHealth
+// HealthSignalType defines the type of health signal. It corresponds to the
+// scope of the HealthCheckRequest being answered: Node, NodePool or Cluster.
+// +kubebuilder:validation:Enum=NodeHealth;NodePoolHealth;ClusterHealth
 type HealthSignalType string
 
 const (
 	// NodeHealth indicates a per-node health signal.
 	NodeHealth HealthSignalType = "NodeHealth"
 
-	// ClusterHealth indicates a cluster-wide health signal (reserved for future use).
+	// NodePoolHealth indicates a node-pool-wide health signal.
+	NodePoolHealth HealthSignalType = "NodePoolHealth"
+
+	// ClusterHealth indicates a cluster-wide health signal.
 	ClusterHealth HealthSignalType = "ClusterHealth"
 )
 
@@ -47,27 +51,29 @@ const (
 // HealthSignalSpec defines the desired state of a HealthSignal.
 //
 // HealthSignal is written entirely by monitoring apps. The AKS RP reads it.
-// Decision logic:
-//   - If any condition status becomes "False", the RP aborts the upgrade.
-//   - If the timeout elapses with no "True" condition, the RP considers the
-//     health verdict as not healthy.
+// Decision logic, applied after each node is upgraded:
+//   - If any condition status becomes "False", the RP aborts the upgrade. This
+//     holds at every scope: an unhealthy NodePool- or Cluster-scoped signal stops
+//     the rollout just as a node-scoped one does.
+//   - If the node-scoped conditions the RP is waiting on are all "True", the
+//     upgrade proceeds to the next node.
+//   - "Unknown" on a node-scoped signal means no verdict yet; the RP waits until
+//     the nodeTimeout configured on UpgradeGatePolicy (upgrade.aks.io/v1alpha1)
+//     elapses, then aborts.
+//   - "Unknown" on a NodePool- or Cluster-scoped signal does not block. Those
+//     scopes are never awaited, so a monitor that is slow or never reports cannot
+//     stall an upgrade. Only an explicit "False" from them has an effect.
 type HealthSignalSpec struct {
 	// Type is the health signal type (e.g., NodeHealth).
 	// +kubebuilder:validation:Required
 	Type HealthSignalType `json:"type"`
 
-	// TargetRef identifies the Kubernetes object this health signal targets.
-	// Uses the standard corev1.ObjectReference type.
-	// Required when type is NodeHealth.
+	// TargetRef optionally identifies the Kubernetes object this health signal
+	// targets. The target is already carried by the HealthCheckRequest this
+	// signal owner-references, which names the node, node pool or cluster. Set it
+	// only as a convenience for readers of the signal alone.
 	// +optional
 	TargetRef *corev1.ObjectReference `json:"targetRef,omitempty"`
-
-	// Timeout is the maximum duration the RP waits for a health verdict.
-	// If the timeout elapses with no "True" condition, the RP considers the
-	// health verdict as not healthy.
-	// Expressed as a Kubernetes duration (e.g., "5m", "1h30m").
-	// +optional
-	Timeout *metav1.Duration `json:"timeout,omitempty"`
 }
 
 // HealthSignalStatus defines the observed state of a HealthSignal.

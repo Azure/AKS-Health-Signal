@@ -21,4 +21,5 @@ var (
 
 func init() {
 	SchemeBuilder.Register(&UpgradeOperation{}, &UpgradeOperationList{})
+	SchemeBuilder.Register(&UpgradeGatePolicy{}, &UpgradeGatePolicyList{})
 }

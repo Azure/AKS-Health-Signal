@@ -1,0 +1,140 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: upgradegatepolicies.upgrade.aks.io
+spec:
+  group: upgrade.aks.io
+  names:
+    kind: UpgradeGatePolicy
+    listKind: UpgradeGatePolicyList
+    plural: upgradegatepolicies
+    shortNames:
+    - ugp
+    singular: upgradegatepolicy
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: |-
+          UpgradeGatePolicy is the Schema for the upgradegatepolicies API.
+
+
+          Installed by a monitoring app (typically shipped in its Helm chart, the same
+          way an application ships its own PodDisruptionBudget) to register that it
+          gates upgrades for some set of nodes. It is durable install-time
+          configuration: it is created once and survives every upgrade operation.
+
+
+          Registration is what arms the upgrade gate. During an upgrade the RP matches
+          each node against the installed policies; a node no policy matches is not
+          gated at all and gets no HealthCheckRequest, while a node with matches waits
+          for exactly the matched providers, each bounded by its own timeout.
+          HealthSignals from a provider that has no policy are ignored.
+
+
+          One object per provider. Never written by the RP, which only reads it.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: UpgradeGatePolicySpec defines the desired state of an UpgradeGatePolicy.
+            properties:
+              provider:
+                description: |-
+                  Provider is the identity of the monitoring app this policy registers.
+                  It MUST match the "health.aks.io/provider" label that the app sets on
+                  every HealthSignal it creates; that label is how the RP maps a signal
+                  back to this policy.
+                maxLength: 253
+                minLength: 1
+                type: string
+              rules:
+                description: |-
+                  Rules are the targets this provider gates.
+
+
+                  listType=atomic is safe here because exactly one owner (the provider's own
+                  Helm release) ever writes this object. A provider gating two node pools on
+                  different terms lists two rules; two different providers use two separate
+                  UpgradeGatePolicy objects, so they can never clobber each other and
+                  uninstalling one provider cannot disturb another's gating.
+                items:
+                  description: |-
+                    UpgradeGateRule declares that this policy's provider gates one target, and on
+                    what terms.
+                  properties:
+                    onFailure:
+                      default: Abort
+                      description: |-
+                        OnFailure is the action the RP takes when this provider reports unhealthy
+                        or fails to report before Timeout.
+                      enum:
+                      - Abort
+                      type: string
+                    target:
+                      description: Target selects the nodes this rule applies to.
+                      properties:
+                        name:
+                          description: |-
+                            Name is the node pool name this rule applies to.
+                            Required when Type is NodePool. Ignored when Type is Cluster.
+                          maxLength: 253
+                          type: string
+                        type:
+                          description: |-
+                            Type indicates whether this rule targets the whole cluster or a single
+                            node pool.
+                          enum:
+                          - Cluster
+                          - NodePool
+                          type: string
+                      required:
+                      - type
+                      type: object
+                      x-kubernetes-validations:
+                      - message: name is required when type is NodePool
+                        rule: self.type != 'NodePool' || (has(self.name) && size(self.name)
+                          > 0)
+                    timeout:
+                      description: |-
+                        Timeout is how long the AKS RP waits for this provider's verdict on one
+                        node before failing closed. The timer is armed when the node's health
+                        check begins, not when the provider's HealthSignal appears, so a provider
+                        that never creates a HealthSignal is still bounded by it.
+                        Expressed as a Kubernetes duration (e.g., "5m", "1h30m").
+                        Omitted means the platform default.
+                      type: string
+                  required:
+                  - target
+                  type: object
+                minItems: 1
+                type: array
+                x-kubernetes-list-type: atomic
+            required:
+            - provider
+            - rules
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true

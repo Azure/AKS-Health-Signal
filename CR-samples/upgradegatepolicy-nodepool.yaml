@@ -1,0 +1,20 @@
+apiVersion: upgrade.aks.io/v1alpha1
+kind: UpgradeGatePolicy
+metadata:
+  name: monitora
+spec:
+  # Must match the health.aks.io/provider label this app sets on its HealthSignals.
+  provider: monitorA
+  rules:
+    # Gate userpool, and wait up to 10 minutes for a verdict on each node.
+    - target:
+        type: NodePool
+        name: userpool
+      timeout: 10m
+      onFailure: Abort
+    # The same provider may gate a second pool on different terms.
+    - target:
+        type: NodePool
+        name: agentpool
+      timeout: 5m
+      onFailure: Abort

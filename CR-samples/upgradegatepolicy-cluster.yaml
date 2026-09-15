@@ -1,0 +1,12 @@
+apiVersion: upgrade.aks.io/v1alpha1
+kind: UpgradeGatePolicy
+metadata:
+  name: monitorb
+spec:
+  provider: monitorB
+  rules:
+    # Cluster scope gates every node in the cluster; name is omitted.
+    - target:
+        type: Cluster
+      timeout: 1m
+      onFailure: Abort

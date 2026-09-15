@@ -4,6 +4,30 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Duration is a string representing a span of time.
+//
+// The accepted syntax is GEP-2257: an unsigned integer with a unit of h, m, s
+// or ms, repeated up to four times ("5m", "1m30s", "500ms"). This is a strict
+// subset of what Go's time.ParseDuration accepts — fractional values ("1.5h"),
+// sub-millisecond units ("100ns", "2us") and negative values ("-5s") are all
+// rejected. Negatives in particular cannot mean anything for a timeout, yet
+// time.ParseDuration accepts them.
+//
+// This is a named string type rather than metav1.Duration because a pattern
+// cannot be attached to metav1.Duration: it is a struct with custom JSON
+// marshalling, so controller-gen emits a bare "type: string" with no constraint
+// and rejects +kubebuilder:validation:Pattern on it. Without a pattern the API
+// server admits any string whatsoever, and a malformed value is not discovered
+// until the RP parses it, part-way through a customer's upgrade. The wire
+// format is identical either way, and sigs.k8s.io/gateway-api makes the same
+// trade for the same reason (apis/v1.Duration).
+//
+// Consumers parse with time.ParseDuration(string(d)); every value admitted by
+// the pattern is accepted by it.
+//
+// +kubebuilder:validation:Pattern=`^([0-9]{1,5}(h|m|s|ms)){1,4}$`
+type Duration string
+
 // OnFailureAction defines what the AKS Resource Provider does when a provider
 // reports an unhealthy verdict, or fails to report one before NodeTimeout.
 // Only Abort is supported.
@@ -45,7 +69,9 @@ type UpgradeGateRule struct {
 	// provider's verdict after each node is upgraded. The timer starts when the
 	// node's health check begins, so it also bounds a provider that never creates
 	// a HealthSignal at all.
-	// Expressed as a Kubernetes duration (e.g., "30s", "5m").
+	// Expressed in GEP-2257 duration syntax (e.g., "30s", "5m", "1m30s"):
+	// whole units of h, m, s or ms only. Fractional ("1.5h") and negative values
+	// are rejected.
 	// Capped at 5 minutes; larger values are clamped. Omitted means the cap.
 	//
 	// The window closes as soon as the node reports healthy, unless
@@ -53,14 +79,17 @@ type UpgradeGateRule struct {
 	//
 	// Each provider's NodeTimeout is independent. A target that is gated by
 	// several providers waits for each against its own deadline.
+	//
 	// +optional
-	NodeTimeout *metav1.Duration `json:"nodeTimeout,omitempty"`
+	NodeTimeout *Duration `json:"nodeTimeout,omitempty"`
 
 	// NodeMinReadyPeriod is the shortest the RP observes a node before moving on,
 	// even once that node has reported healthy. It keeps the window open so this
 	// provider's NodePool- and Cluster-scoped signals have time to notice damage
 	// that is invisible at the node itself.
-	// Expressed as a Kubernetes duration (e.g., "30s", "2m").
+	// Expressed in GEP-2257 duration syntax (e.g., "30s", "2m", "1m30s"):
+	// whole units of h, m, s or ms only. Fractional ("1.5h") and negative values
+	// are rejected.
 	// Must not exceed NodeTimeout. Omitted means no floor: the window closes on
 	// the node verdict.
 	//
@@ -71,7 +100,7 @@ type UpgradeGateRule struct {
 	// because "the new object reported Ready" is not on its own evidence that the
 	// rollout is safe to continue.
 	// +optional
-	NodeMinReadyPeriod *metav1.Duration `json:"nodeMinReadyPeriod,omitempty"`
+	NodeMinReadyPeriod *Duration `json:"nodeMinReadyPeriod,omitempty"`
 
 	// OnFailure is the action the RP takes when this provider reports unhealthy
 	// or fails to report before NodeTimeout.

@@ -95,7 +95,9 @@ spec:
                         even once that node has reported healthy. It keeps the window open so this
                         provider's NodePool- and Cluster-scoped signals have time to notice damage
                         that is invisible at the node itself.
-                        Expressed as a Kubernetes duration (e.g., "30s", "2m").
+                        Expressed in GEP-2257 duration syntax (e.g., "30s", "2m", "1m30s"):
+                        whole units of h, m, s or ms only. Fractional ("1.5h") and negative values
+                        are rejected.
                         Must not exceed NodeTimeout. Omitted means no floor: the window closes on
                         the node verdict.
 
@@ -107,6 +109,7 @@ spec:
                         Analogous to minReadySeconds on Deployment and DaemonSet, which exists
                         because "the new object reported Ready" is not on its own evidence that the
                         rollout is safe to continue.
+                      pattern: ^([0-9]{1,5}(h|m|s|ms)){1,4}$
                       type: string
                     nodeTimeout:
                       description: |-
@@ -114,7 +117,9 @@ spec:
                         provider's verdict after each node is upgraded. The timer starts when the
                         node's health check begins, so it also bounds a provider that never creates
                         a HealthSignal at all.
-                        Expressed as a Kubernetes duration (e.g., "30s", "5m").
+                        Expressed in GEP-2257 duration syntax (e.g., "30s", "5m", "1m30s"):
+                        whole units of h, m, s or ms only. Fractional ("1.5h") and negative values
+                        are rejected.
                         Capped at 5 minutes; larger values are clamped. Omitted means the cap.
 
 
@@ -124,6 +129,7 @@ spec:
 
                         Each provider's NodeTimeout is independent. A target that is gated by
                         several providers waits for each against its own deadline.
+                      pattern: ^([0-9]{1,5}(h|m|s|ms)){1,4}$
                       type: string
                     onFailure:
                       default: Abort

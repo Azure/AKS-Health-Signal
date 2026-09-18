@@ -9,8 +9,4 @@ spec:
     - target:
         scope: Cluster
       nodeTimeout: 1m
-      # Hold the window open 30s after the node reports healthy, so this
-      # cluster-scoped monitor has time to notice damage the node cannot see in
-      # itself.
-      nodeMinReadyPeriod: 30s
       onFailure: Abort

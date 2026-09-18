@@ -20,13 +20,8 @@ upgrades on its own health verdict.
 5. The app reports the verdict in `status.conditions`.
 6. AKS proceeds on `"True"`, aborts on `"False"`, and keeps waiting on
    `"Unknown"` until the policy's `nodeTimeout` elapses — at which point it aborts.
-7. Before moving to the next node, AKS holds the window open for the policy's
-   `nodeMinReadyPeriod`, even if the node already reported `"True"`. This gives
-   the app's node pool- and cluster-scoped signals time to notice damage that is
-   not visible at the node itself. A `"False"` from any scope aborts immediately,
-   so the floor delays only success.
 
-Steps 3–7 repeat for each node in turn.
+Steps 3–6 repeat for each node in turn.
 
 Two rules follow from this, and both matter:
 
@@ -94,10 +89,6 @@ spec:
     - target:
         scope: Cluster
       nodeTimeout: 1m
-      # Hold the window open 30s after the node reports healthy, so this
-      # cluster-scoped monitor has time to notice damage the node cannot see in
-      # itself.
-      nodeMinReadyPeriod: 30s
       onFailure: Abort
 ```
 
@@ -119,12 +110,6 @@ spec:
   omitting it means the cap. The ceiling is per node, not per operation, so a
   50-node pool can still take hours — it bounds how long any single node may
   stall the rollout.
-- **`nodeMinReadyPeriod` is the floor on the same window.** By default the window
-  shuts the instant the node reports healthy — so a node monitor that answers in
-  10 seconds leaves a cluster monitor only 10 seconds to notice anything, which is
-  exactly the case a cluster monitor exists for. Setting a floor holds the window
-  open for at least that long. It must not exceed `nodeTimeout`, and it delays
-  only success: an unhealthy verdict at any scope still aborts at once.
 - **`nodeTimeout` is a window, not just a node deadline.** It opens after each
   node is upgraded and closes early once that node's check succeeds. While it is
   open the RP watches this provider's signals at *every* scope:
@@ -160,14 +145,10 @@ spec:
       nodeTimeout: 2m
       onFailure: Abort
     # userpool is slower to settle, so it overrides the default above.
-    # nodeMinReadyPeriod holds the window open for a full minute even when the
-    # node reports healthy at once, giving this provider's cluster-scoped signal
-    # time to notice damage the node cannot see in itself.
     - target:
         scope: NodePool
         name: userpool
       nodeTimeout: 5m
-      nodeMinReadyPeriod: 1m
       onFailure: Abort
 ```
 

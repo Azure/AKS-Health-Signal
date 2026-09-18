@@ -57,9 +57,7 @@ type UpgradeGateTarget struct {
 // what terms.
 //
 // After each node is upgraded the RP opens a window for this provider and watches
-// its HealthSignals at every scope. NodeMinReadyPeriod is the floor on that
-// window and NodeTimeout the ceiling.
-// +kubebuilder:validation:XValidation:rule="!has(self.nodeMinReadyPeriod) || !has(self.nodeTimeout) || duration(self.nodeMinReadyPeriod) <= duration(self.nodeTimeout)",message="nodeMinReadyPeriod must not exceed nodeTimeout"
+// its HealthSignals at every scope. NodeTimeout is the ceiling on that window.
 type UpgradeGateRule struct {
 	// Target selects the nodes this rule applies to.
 	// +kubebuilder:validation:Required
@@ -74,33 +72,13 @@ type UpgradeGateRule struct {
 	// are rejected.
 	// Capped at 5 minutes; larger values are clamped. Omitted means the cap.
 	//
-	// The window closes as soon as the node reports healthy, unless
-	// NodeMinReadyPeriod holds it open.
+	// The window closes as soon as the node reports healthy.
 	//
 	// Each provider's NodeTimeout is independent. A target that is gated by
 	// several providers waits for each against its own deadline.
 	//
 	// +optional
 	NodeTimeout *Duration `json:"nodeTimeout,omitempty"`
-
-	// NodeMinReadyPeriod is the shortest the RP observes a node before moving on,
-	// even once that node has reported healthy. It keeps the window open so this
-	// provider's NodePool- and Cluster-scoped signals have time to notice damage
-	// that is invisible at the node itself.
-	// Expressed in GEP-2257 duration syntax (e.g., "30s", "2m", "1m30s"):
-	// whole units of h, m, s or ms only. Fractional ("1.5h") and negative values
-	// are rejected.
-	// Must not exceed NodeTimeout. Omitted means no floor: the window closes on
-	// the node verdict.
-	//
-	// An unhealthy verdict at any scope still aborts immediately; the floor delays
-	// success, never failure.
-	//
-	// Analogous to minReadySeconds on Deployment and DaemonSet, which exists
-	// because "the new object reported Ready" is not on its own evidence that the
-	// rollout is safe to continue.
-	// +optional
-	NodeMinReadyPeriod *Duration `json:"nodeMinReadyPeriod,omitempty"`
 
 	// OnFailure is the action the RP takes when this provider reports unhealthy
 	// or fails to report before NodeTimeout.

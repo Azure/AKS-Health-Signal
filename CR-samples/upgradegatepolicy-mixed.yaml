@@ -11,12 +11,8 @@ spec:
       nodeTimeout: 2m
       onFailure: Abort
     # userpool is slower to settle, so it overrides the default above.
-    # nodeMinReadyPeriod holds the window open for a full minute even when the
-    # node reports healthy at once, giving this provider's cluster-scoped signal
-    # time to notice damage the node cannot see in itself.
     - target:
         scope: NodePool
         name: userpool
       nodeTimeout: 5m
-      nodeMinReadyPeriod: 1m
       onFailure: Abort
